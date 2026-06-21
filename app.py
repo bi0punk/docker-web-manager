@@ -1,8 +1,21 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, request, Response
 import docker
+import os
 
 app = Flask(__name__)
 client = docker.from_env()
+
+def check_auth(username, password):
+    return username == os.getenv("DWM_USER", "admin") and password == os.getenv("DWM_PASS", "changeme")
+
+def authenticate():
+    return Response("Login required", 401, {"WWW-Authenticate": 'Basic realm="Docker Manager"'})
+
+@app.before_request
+def require_auth():
+    auth = request.authorization
+    if not auth or not check_auth(auth.username, auth.password):
+        return authenticate()
 
 @app.route('/')
 def index():
