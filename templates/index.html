@@ -9,7 +9,6 @@
 <body class="bg-light">
   <div class="container-fluid">
     <div class="row vh-100">
-      <!-- Sidebar -->
       <nav class="col-3 bg-white border-end p-3">
         <h4>Contenedores</h4>
         <div class="list-group" id="container-list">
@@ -21,7 +20,6 @@
         </div>
       </nav>
 
-      <!-- Main content -->
       <main class="col-9 p-4 overflow-auto">
         {% for c in containers %}
         <div class="collapse mb-4" id="details-{{ c.short_id }}">
@@ -47,9 +45,15 @@
                   {% endif %}
                 </td></tr>
                 <tr><th>Acciones</th><td>
-                  <a href="/restart/{{ c.id }}" class="btn btn-sm btn-warning me-2">Reiniciar</a>
-                  <a href="/stop/{{ c.id }}" class="btn btn-sm btn-secondary me-2">Detener</a>
-                  <a href="/remove/{{ c.id }}" class="btn btn-sm btn-danger">Eliminar</a>
+                  <form method="post" action="/restart/{{ c.id }}" style="display:inline">
+                    <button type="submit" class="btn btn-sm btn-warning me-2">Reiniciar</button>
+                  </form>
+                  <form method="post" action="/stop/{{ c.id }}" style="display:inline">
+                    <button type="submit" class="btn btn-sm btn-secondary me-2">Detener</button>
+                  </form>
+                  <form method="post" action="/remove/{{ c.id }}" style="display:inline" onsubmit="return confirm('Eliminar contenedor {{ c.name }}?')">
+                    <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                  </form>
                 </td></tr>
               </table>
             </div>

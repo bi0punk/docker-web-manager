@@ -1,12 +1,22 @@
-from flask import Flask, render_template, redirect, url_for, request, Response
-import docker
 import os
+import secrets
+from flask import Flask, render_template, redirect, url_for, request, Response, abort
+import docker
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("DWM_SECRET", secrets.token_hex(32))
 client = docker.from_env()
 
+DWM_USER = os.environ.get("DWM_USER")
+DWM_PASS = os.environ.get("DWM_PASS")
+if not DWM_USER or not DWM_PASS:
+    raise RuntimeError("DWM_USER and DWM_PASS must be set in environment or .env file")
+
 def check_auth(username, password):
-    return username == os.getenv("DWM_USER", "admin") and password == os.getenv("DWM_PASS", "changeme")
+    return username == DWM_USER and password == DWM_PASS
 
 def authenticate():
     return Response("Login required", 401, {"WWW-Authenticate": 'Basic realm="Docker Manager"'})
@@ -19,26 +29,34 @@ def require_auth():
 
 @app.route('/')
 def index():
-    # Obtiene todos los contenedores
     containers = client.containers.list(all=True)
     return render_template('index.html', containers=containers)
 
-@app.route('/restart/<container_id>')
+@app.route('/restart/<container_id>', methods=['POST'])
 def restart(container_id):
-    c = client.containers.get(container_id)
-    c.restart()
+    try:
+        c = client.containers.get(container_id)
+        c.restart()
+    except docker.errors.NotFound:
+        abort(404)
     return redirect(url_for('index'))
 
-@app.route('/stop/<container_id>')
+@app.route('/stop/<container_id>', methods=['POST'])
 def stop(container_id):
-    c = client.containers.get(container_id)
-    c.stop()
+    try:
+        c = client.containers.get(container_id)
+        c.stop()
+    except docker.errors.NotFound:
+        abort(404)
     return redirect(url_for('index'))
 
-@app.route('/remove/<container_id>')
+@app.route('/remove/<container_id>', methods=['POST'])
 def remove(container_id):
-    c = client.containers.get(container_id)
-    c.remove(force=True)
+    try:
+        c = client.containers.get(container_id)
+        c.remove(force=True)
+    except docker.errors.NotFound:
+        abort(404)
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
