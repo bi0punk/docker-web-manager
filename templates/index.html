@@ -46,12 +46,15 @@
                 </td></tr>
                 <tr><th>Acciones</th><td>
                   <form method="post" action="/restart/{{ c.id }}" style="display:inline">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-sm btn-warning me-2">Reiniciar</button>
                   </form>
                   <form method="post" action="/stop/{{ c.id }}" style="display:inline">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-sm btn-secondary me-2">Detener</button>
                   </form>
                   <form method="post" action="/remove/{{ c.id }}" style="display:inline" onsubmit="return confirm('Eliminar contenedor {{ c.name }}?')">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
                   </form>
                 </td></tr>
