@@ -4,7 +4,7 @@ Lightweight web-based Docker container manager. Provides a simple Flask UI to li
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue)](https://python.org)
-[![CI](https://github.com/tu-usuario/docker-web-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/tu-usuario/docker-web-manager/actions/workflows/ci.yml)
+[![CI](https://github.com/bi0punk/docker-web-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/bi0punk/docker-web-manager/actions/workflows/ci.yml)
 
 ## Tabla de Contenidos
 
@@ -24,9 +24,13 @@ Lightweight web-based Docker container manager. Provides a simple Flask UI to li
 ## Características
 
 - Listado completo de contenedores (running + stopped)
-- Acciones: start, stop, restart, remove containers
+- Acciones: stop, restart, remove containers
 - Interfaz web limpia con Bootstrap
 - Autenticación HTTP Basic
+- Protección CSRF en todos los formularios POST
+- Rate limiting por IP en endpoints críticos
+- Logging de operaciones (login, stop, restart, remove)
+- Health check endpoint (`/health`)
 - Conexión al socket Docker local
 
 ## Stack
@@ -56,7 +60,7 @@ docker-web-manager/
 ## Instalación
 
 ```bash
-git clone https://github.com/tu-usuario/docker-web-manager.git
+git clone https://github.com/bi0punk/docker-web-manager.git
 cd docker-web-manager
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
@@ -82,10 +86,14 @@ ruff check .
 
 Variables de entorno (ver `.env.example`):
 
-| Variable    | Default    | Descripción                          |
-|-------------|------------|--------------------------------------|
-| `DWM_USER`  | `admin`    | Usuario HTTP Basic Auth              |
-| `DWM_PASS`  | `changeme` | Contraseña HTTP Basic Auth           |
+| Variable | Default | Descripción |
+|---|---|---|
+| `DWM_USER` | (requerido) | Usuario HTTP Basic Auth |
+| `DWM_PASS` | (requerido) | Contraseña HTTP Basic Auth |
+| `DWM_SECRET` | (generada) | Secret key de Flask para sesiones/CSRF |
+| `DWM_HOST` | `127.0.0.1` | Host de escucha |
+| `DWM_PORT` | `5000` | Puerto |
+| `DWM_RATE_LIMIT` | `30` | Peticiones máximas por minuto por IP |
 
 ## CI
 
@@ -93,9 +101,12 @@ GitHub Actions ejecuta ruff lint + pytest en cada push y PR.
 
 ## Seguridad
 
-- Todos los endpoints requieren HTTP Basic Authentication
+- HTTP Basic Authentication en todos los endpoints
+- Protección CSRF con tokens de sesión en formularios POST
+- Rate limiting (30 req/min por IP)
+- Logging de eventos de seguridad (login, operaciones críticas)
 - El socket Docker se expone a la web — restringir acceso a redes de confianza
-- Cambiar credenciales por defecto (`admin`/`changeme`) antes de desplegar
+- Cambiar credenciales antes de desplegar
 - Ejecutar detrás de un reverse proxy con HTTPS en producción
 
 ## Limitaciones / Roadmap
