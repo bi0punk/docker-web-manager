@@ -2,7 +2,6 @@ import logging
 import os
 import secrets
 import time
-from datetime import datetime
 
 import docker
 from dotenv import load_dotenv
@@ -24,7 +23,7 @@ try:
     client.ping()
 except Exception as e:
     log.critical("No se pudo conectar al daemon de Docker: %s", e)
-    raise RuntimeError(f"Docker daemon no disponible: {e}")
+    raise RuntimeError(f"Docker daemon no disponible: {e}") from e
 
 DWM_USER = os.environ.get("DWM_USER")
 DWM_PASS = os.environ.get("DWM_PASS")
@@ -86,7 +85,13 @@ def csrf_protect():
 
 
 def log_action(action: str, container_name: str):
-    log.info("user=%s ip=%s action=%s container=%s", DWM_USER, request.remote_addr, action, container_name)
+    log.info(
+        "user=%s ip=%s action=%s container=%s",
+        DWM_USER,
+        request.remote_addr,
+        action,
+        container_name,
+    )
 
 
 def handle_docker_error(func_name: str, container_id: str):
